@@ -231,6 +231,14 @@ security-research-lab/
 
 ---
 
+## Copyright & Credits
+
+**Security Research Lab** (template, instruction set, and structure) is developed by **[@purwowd](https://github.com/purwowd)** — [Kaito Kids Labs](https://kaitokidslabs.com).
+
+Proof-of-Concepts (PoCs), tools, and research artifacts in this repository are produced by the lab and follow the templates and protocols developed by [@purwowd](https://github.com/purwowd).
+
+---
+
 ## License
 
 Internal use — Security Research Lab.

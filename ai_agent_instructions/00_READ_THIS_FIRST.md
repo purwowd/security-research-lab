@@ -119,3 +119,7 @@ After reading all instruction documents, the agent should:
 3. Proceed with the researcher's request using the protocols defined herein
 
 **Now proceed to `01_AGENT_AUTHORIZATION.md`.**
+
+---
+
+*Security Research Lab (instruction set and templates) developed by [@purwowd](https://github.com/purwowd) — [Kaito Kids Labs](https://kaitokidslabs.com).*
