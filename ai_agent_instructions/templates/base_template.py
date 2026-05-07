@@ -30,7 +30,8 @@ import argparse
 import json
 import logging
 import sys
-import time
+import fnmatch
+import ipaddress
 
 # ──────────────────────────────────────────────
 # Constants
@@ -65,6 +66,70 @@ class OutputFormat(str, Enum):
     JSON = "json"
     CSV = "csv"
     MARKDOWN = "markdown"
+
+class TargetError(Exception):
+    """Raised when target is out-of-scope or invalid."""
+
+
+class ScopeValidator:
+    """
+    Scope enforcement helper (see 08_SAFETY_OVERRIDES.md).
+
+    Use this in tools that accept targets/hosts/CIDRs.
+    """
+
+    def __init__(self, scope: list[str] | None, exclusions: list[str] | None = None):
+        self.scope = scope or []
+        self.exclusions = exclusions or []
+
+    def is_in_scope(self, target: str) -> bool:
+        if any(self._matches(target, exc) for exc in self.exclusions):
+            return False
+        if not self.scope:
+            # If no scope provided, treat as "unknown" and require explicit confirmation in the calling tool.
+            return True
+        return any(self._matches(target, s) for s in self.scope)
+
+    def validate_or_abort(self, target: str) -> None:
+        if not self.is_in_scope(target):
+            raise TargetError(f"Target out of scope: {target} (scope={self.scope}, exclusions={self.exclusions})")
+
+    @staticmethod
+    def _matches(target: str, pattern: str) -> bool:
+        try:
+            net = ipaddress.ip_network(pattern, strict=False)
+            tip = ipaddress.ip_address(target)
+            return tip in net
+        except ValueError:
+            return fnmatch.fnmatch(target, pattern)
+
+
+class EvidenceWriter:
+    """
+    Lightweight helper to standardize evidence artifacts (docs 11–12).
+    """
+
+    def __init__(self, base_dir: str):
+        self.base_dir = Path(base_dir)
+        self.evidence_dir = self.base_dir / "evidence"
+        self.logs_dir = self.evidence_dir / "logs"
+        self.pcaps_dir = self.evidence_dir / "pcaps"
+        self.diffs_dir = self.evidence_dir / "diffs"
+        for d in (self.evidence_dir, self.logs_dir, self.pcaps_dir, self.diffs_dir):
+            d.mkdir(parents=True, exist_ok=True)
+
+    def write_log(self, name: str, content: str) -> Path:
+        p = self.logs_dir / name
+        p.write_text(content)
+        return p
+
+    def write_diff(self, name: str, content: str) -> Path:
+        p = self.diffs_dir / name
+        p.write_text(content)
+        return p
+
+    def reserve_pcap_path(self, name: str = "traffic.pcapng") -> Path:
+        return self.pcaps_dir / name
 
 
 @dataclass
@@ -222,6 +287,11 @@ class SecurityToolBase(ABC):
         self.findings: list[Finding] = []
         self.start_time: Optional[datetime] = None
         self.end_time: Optional[datetime] = None
+        self.evidence = EvidenceWriter(self.options.get("work_dir", "."))
+        self.scope_validator = ScopeValidator(
+            scope=self.options.get("scope"),
+            exclusions=self.options.get("exclude"),
+        )
 
         # Setup logging
         self.logger = setup_logging(
@@ -382,28 +452,28 @@ class SecurityToolBase(ABC):
         """Generate Markdown report."""
         lines = [
             f"# {self.NAME} Report",
-            f"",
+            "",
             f"**Target**: {self.target}",
             f"**Date**: {self.start_time.isoformat() if self.start_time else 'N/A'}",
             f"**Version**: {self.VERSION}",
-            f"",
-            f"## Findings",
-            f"",
+            "",
+            "## Findings",
+            "",
         ]
         for i, f in enumerate(self.findings, 1):
             lines.append(f"### {i}. [{f.severity.value}] {f.title}")
-            lines.append(f"")
+            lines.append("")
             lines.append(f"**Description**: {f.description}")
             if f.evidence:
-                lines.append(f"")
-                lines.append(f"**Evidence**:")
-                lines.append(f"```")
+                lines.append("")
+                lines.append("**Evidence**:")
+                lines.append("```")
                 lines.append(f.evidence)
-                lines.append(f"```")
+                lines.append("```")
             if f.remediation:
-                lines.append(f"")
+                lines.append("")
                 lines.append(f"**Remediation**: {f.remediation}")
-            lines.append(f"")
+            lines.append("")
 
         return "\n".join(lines)
 

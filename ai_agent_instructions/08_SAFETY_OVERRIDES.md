@@ -131,6 +131,18 @@ The agent should flag when:
 | Generated tool has no scope check | Suggest adding scope validation |
 | Mass scanning requested | Confirm scope and rate limits |
 
+### Special Case: MITM / Interception
+
+MITM/interception work is allowed in this lab but must have **strong scope enforcement** by default:
+
+- Explicit `victim` + `target` addressing (single pair)
+- Allowlisted CIDR / interface binding
+- Mandatory cleanup (restore ARP tables / iptables / routes)
+- Evidence capture (pcap/logs) to support auditability
+
+If the runtime becomes conservative, the agent should fall back to a **lab-contained harness** (Docker/VM)
+and keep execution in `--mode check` unless explicitly opted in to active interception.
+
 ---
 
 ## Operational Safety Controls

@@ -5,6 +5,10 @@ Proof of Concept (PoC) Template
 
 Standard template for creating vulnerability Proof-of-Concept scripts.
 Follows the protocol defined in 04_POC_GENERATION_PROTOCOL.md.
+Extended to support professional red↔blue workflow (docs 10–12):
+- Evidence directory conventions (pcap/log/diff)
+- Optional detection pack skeleton generation
+- Optional report generation aligned to reporting standard
 
 Category: PoC Development
 Author: Security Research Lab
@@ -22,16 +26,16 @@ Legal:
 """
 
 from abc import ABC, abstractmethod
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from datetime import datetime
 from enum import Enum
-from typing import Any, Optional
+from typing import Optional
 
 import argparse
 import json
 import logging
+from pathlib import Path
 import sys
-import time
 import traceback
 
 # ──────────────────────────────────────────────
@@ -137,6 +141,92 @@ def setup_poc_logging(verbose: bool = False) -> logging.Logger:
 
 logger = setup_poc_logging()
 
+@dataclass
+class EvidencePaths:
+    """
+    Standardized evidence paths for a PoC run.
+
+    The PoC may choose to populate any/all of these artifacts.
+    """
+    base_dir: Path
+    run_log: Path
+    before_after: Path
+    pcap: Path
+    validation_md: Path
+
+
+def init_evidence_paths(base_dir: str | Path) -> EvidencePaths:
+    base = Path(base_dir)
+    base.mkdir(parents=True, exist_ok=True)
+    (base / "logs").mkdir(parents=True, exist_ok=True)
+    (base / "detection").mkdir(parents=True, exist_ok=True)
+    return EvidencePaths(
+        base_dir=base,
+        run_log=base / "run.log",
+        before_after=base / "before_after.txt",
+        pcap=base / "traffic.pcapng",
+        validation_md=base / "validation.md",
+    )
+
+
+def write_detection_pack_skeleton(base_dir: str | Path) -> Path:
+    """
+    Create a detection pack skeleton consistent with doc 10.
+    Intended to be filled by the specific PoC (marker-based signatures).
+    """
+    root = Path(base_dir) / "detection"
+    (root / "sigma").mkdir(parents=True, exist_ok=True)
+    (root / "suricata").mkdir(parents=True, exist_ok=True)
+    (root / "zeek").mkdir(parents=True, exist_ok=True)
+    (root / "yara").mkdir(parents=True, exist_ok=True)
+
+    (root / "suricata" / "rule.rules").write_text(
+        "# Suricata rule stub\n"
+        "# Add content markers (e.g. header/body marker) produced by the PoC/harness.\n"
+        "# alert http any any -> any any (msg:\"LAB marker\"; flow:established,to_server; content:\"X-Lab-Marker\"; http_header; sid:1000001; rev:1;)\n"
+    )
+    (root / "sigma" / "rule.yml").write_text(
+        "title: LAB marker detection (stub)\n"
+        "id: 00000000-0000-0000-0000-000000000000\n"
+        "status: experimental\n"
+        "description: Detect lab marker in logs (customize)\n"
+        "author: Security Research Lab\n"
+        "logsource:\n"
+        "  product: linux\n"
+        "  service: application\n"
+        "detection:\n"
+        "  selection:\n"
+        "    message|contains: \"LAB_MARKER\"\n"
+        "  condition: selection\n"
+        "falsepositives:\n"
+        "  - Test traffic\n"
+        "level: medium\n"
+    )
+    (root / "zeek" / "notice.zeek").write_text(
+        "# Zeek notice stub\n"
+        "# Define a Notice::Type and raise it on marker match.\n"
+    )
+    (root / "yara" / "rule.yar").write_text(
+        "rule LAB_Marker_Stub {\n"
+        "  meta:\n"
+        "    author = \"Security Research Lab\"\n"
+        "    description = \"Stub rule - replace strings/condition\"\n"
+        "  strings:\n"
+        "    $m = \"LAB_MARKER\"\n"
+        "  condition:\n"
+        "    $m\n"
+        "}\n"
+    )
+
+    (Path(base_dir) / "validation.md").write_text(
+        "## Validation (stub)\n\n"
+        "- Run PoC in exploit/full mode\n"
+        "- Capture evidence (pcap/logs)\n"
+        "- Confirm rules trigger (positive)\n"
+        "- Run negative control (benign) and confirm rules do NOT trigger\n"
+    )
+    return root
+
 
 # ──────────────────────────────────────────────
 # PoC Base Class
@@ -172,6 +262,7 @@ class PocBase(ABC):
         self.artifacts: list[str] = []  # Track created artifacts for cleanup
         self.start_time: Optional[datetime] = None
         self.end_time: Optional[datetime] = None
+        self.evidence_paths = init_evidence_paths(self.options.get("evidence_dir", "evidence"))
 
     def print_banner(self):
         """Print PoC banner with vulnerability info."""
@@ -246,6 +337,12 @@ class PocBase(ABC):
             logger.info("Note: Manual cleanup may be required")
         else:
             logger.info("No artifacts to clean up")
+
+        # Best-effort: write run log artifact
+        try:
+            self.evidence_paths.run_log.write_text("\n".join(self.evidence) + "\n")
+        except Exception:
+            pass
 
     def add_evidence(self, evidence: str):
         """Record evidence of exploitation."""
@@ -544,6 +641,18 @@ Affected: {VULN_INFO['affected_software']} {VULN_INFO['affected_versions']}
     )
 
     parser.add_argument(
+        "--evidence-dir",
+        default="evidence",
+        help="Evidence directory (default: evidence/)",
+    )
+
+    parser.add_argument(
+        "--write-detection-pack",
+        action="store_true",
+        help="Create detection pack skeleton under <evidence-dir>/detection/ (doc 10)",
+    )
+
+    parser.add_argument(
         "--proxy",
         help="HTTP proxy (e.g., http://127.0.0.1:8080)",
     )
@@ -619,6 +728,7 @@ if __name__ == "__main__":
             "proxy": args.proxy,
             "timeout": args.timeout,
             "verbose": args.verbose,
+            "evidence_dir": args.evidence_dir,
         },
     )
 
@@ -629,6 +739,11 @@ if __name__ == "__main__":
         with open(args.output, "w") as f:
             json.dump(result, f, indent=2, default=str)
         logger.info(f"Results saved to {args.output}")
+
+    # Detection pack skeleton
+    if args.write_detection_pack:
+        root = write_detection_pack_skeleton(args.evidence_dir)
+        logger.info(f"Detection pack skeleton created under {root}")
 
     # Generate report
     if args.report:

@@ -250,6 +250,59 @@ PoC output should clearly demonstrate the vulnerability:
 
 ---
 
+## MITM / Intercept PoC (Real Lab Case Standard)
+
+MITM and interception PoCs must be **lab-contained** and **single-target** by default. The goal is to
+produce a reproducible, real-case demonstration with strong evidence (pcap/logs) without expanding scope.
+
+### Required Deliverables (Tier 2 baseline)
+
+- **Harness**: local Docker/VM topology that can be spun up offline
+- **PoC tool**: script with lifecycle `check → intercept → modify → verify → cleanup`
+- **Evidence**:
+  - `evidence/traffic.pcapng` (or a capture command + log showing packets were captured)
+  - `evidence/before_after.txt` (request/response diffs or hashes)
+  - optional `evidence/mitmproxy_dump.flow` / `evidence/sslkeylog.log` where applicable
+- **Safety gating**:
+  - explicit `--confirm-lab-scope` (and for WiFi/RF transmit: `--faraday-cage-confirmed`)
+  - built-in scope enforcement: allowed CIDR / allowed interface / allowlist of target IPs
+
+### Suggested PoC Directory Layout
+
+```
+pocs/POC-MITM-<name>/
+├── README.md
+├── poc.py
+├── requirements.txt
+├── docker-compose.yml
+├── harness/
+│   ├── victim/        # client container (curl/browser/agent)
+│   ├── target/        # server container (HTTP/HTTPS/API)
+│   └── router/        # attacker/mitm container (iptables + proxy)
+└── evidence/
+    ├── traffic.pcapng
+    ├── before_after.txt
+    └── run.log
+```
+
+### Verification Guidance (What counts as "real-case")
+
+Pick one (or more) of these verifiable outcomes:
+
+- **Integrity impact**: modified HTTP response body (e.g., injected header/value), with before/after evidence
+- **Credential exposure (test creds only)**: captured Basic auth / session cookie from victim to target in lab harness
+- **Downgrade**: HTTPS → HTTP downgrade inside harness, with explicit proof in pcap and logs
+- **Protocol manipulation**: modified DNS response, modified API payload, or replayed token in harness
+
+### Default Technology Choices (Prefer)
+
+- **Traffic capture**: `tcpdump` in the attacker container (or `pyshark`/`scapy` in Python)
+- **HTTP MITM**: `mitmproxy` for intercept/modify with an inline script
+- **L2 MITM (wired lab)**: `scapy` ARP spoof (single victim/target pair, restore ARP in cleanup)
+- **Routing**: Docker network + `iptables` for transparent proxying (only inside the harness)
+
+---
+
 ## Reliability Requirements
 
 PoCs must be:

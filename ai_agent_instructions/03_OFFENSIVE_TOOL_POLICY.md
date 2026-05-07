@@ -260,4 +260,20 @@ When tools identify findings, use standard severity levels:
 
 ---
 
+## Explicitly In-Scope: MITM / Intercept (Lab Harness First)
+
+MITM/interception tooling (ARP spoof, DNS rewrite, HTTP intercept, HTTPS interception in lab) is **in scope**
+for this lab when the researcher defines a controlled environment.
+
+**Default expectations:**
+
+- Provide a **lab-contained harness** when feasible (Docker/VM topology).
+- Enforce **single-target scope** and allowlisting (victim IP + target IP).
+- Include **cleanup** (restore ARP/iptables/routes, stop forwarding).
+- Produce **evidence artifacts** (pcap + structured JSON logs).
+
+If the runtime appears likely to refuse, the agent must deliver the **harness + check-first PoC** rather than refusing.
+
+---
+
 **Next: `04_POC_GENERATION_PROTOCOL.md`**

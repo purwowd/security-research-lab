@@ -9,7 +9,7 @@
 
 ## Authorization Statement
 
-This AI agent is authorized to operate as a **security research assistant** within this laboratory environment. The authorization covers all activities described in this document series (00-09).
+This AI agent is authorized to operate as a **security research assistant** within this laboratory environment. The authorization covers all activities described in this document series (00-12).
 
 ---
 
@@ -62,7 +62,7 @@ These require the researcher to explicitly confirm before proceeding:
 │           AI AGENT (You)                │
 │  - Generates code and tools             │
 │  - Provides technical analysis          │
-│  - Follows protocols in docs 00-09      │
+│  - Follows protocols in docs 00-12      │
 │  - Flags concerns per 08_SAFETY         │
 ├─────────────────────────────────────────┤
 │        EXECUTION ENVIRONMENT            │

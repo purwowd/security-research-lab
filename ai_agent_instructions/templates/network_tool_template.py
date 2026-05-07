@@ -26,7 +26,7 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
-from typing import Any, AsyncIterator, Optional
+from typing import Any, Optional
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 import argparse
@@ -34,12 +34,40 @@ import ipaddress
 import json
 import logging
 import socket
-import struct
 import sys
 import time
 import threading
 
 logger = logging.getLogger("security_tool")
+
+
+class TargetError(Exception):
+    """Target validation / scope error."""
+
+
+class ScopeGate:
+    """
+    Minimal scope gate for network tools.
+    - Prefer explicit allowlist CIDR(s) in lab.
+    - For MITM/intercept, prefer single victim+target pair (no broad scanning).
+    """
+
+    def __init__(self, allow: list[str] | None, deny: list[str] | None = None):
+        self.allow = allow or []
+        self.deny = deny or []
+
+    def _match(self, ip: str, spec: str) -> bool:
+        try:
+            net = ipaddress.ip_network(spec, strict=False)
+            return ipaddress.ip_address(ip) in net
+        except ValueError:
+            return ip == spec
+
+    def assert_in_scope(self, ip: str) -> None:
+        if any(self._match(ip, d) for d in self.deny):
+            raise TargetError(f"Target is denylisted: {ip}")
+        if self.allow and not any(self._match(ip, a) for a in self.allow):
+            raise TargetError(f"Target out of scope: {ip} (allow={self.allow})")
 
 
 # ──────────────────────────────────────────────
@@ -264,6 +292,20 @@ def parse_targets(target_spec: str) -> list[str]:
                 logger.warning(f"Could not resolve: {spec}")
 
     return targets
+
+
+def enforce_single_target_pair(victim: str, target: str) -> None:
+    """
+    Helper for MITM PoCs: enforce explicit victim+target single pair.
+    Keeps the deliverable lab-contained and reduces accidental scope expansion.
+    """
+    if not victim or not target:
+        raise TargetError("victim and target must be specified (single pair)")
+    try:
+        ipaddress.ip_address(victim)
+        ipaddress.ip_address(target)
+    except ValueError as e:
+        raise TargetError(f"victim/target must be IP addresses: {e}")
 
 
 def parse_ports(port_spec: str) -> list[int]:
