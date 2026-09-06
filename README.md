@@ -15,7 +15,7 @@ cursor .
 # 3. Start a new chat and use one of the prompts below
 ```
 
-That's it. The `.cursorrules` file is automatically loaded by Cursor, which tells the agent to read the instruction documents in `ai_agent_instructions/`. The agent will understand its role, authorization scope, and how to behave.
+That's it. Project rules (`.cursorrules`, `AGENTS.md`, and `.cursor/rules/*.mdc`) tell the agent to read `ai_agent_instructions/`. The same set works in **Cursor IDE** and **Cursor CLI** (`agent`) — CLI officially loads `AGENTS.md` + `.cursor/rules`.
 
 ### Use these rules in a new project
 

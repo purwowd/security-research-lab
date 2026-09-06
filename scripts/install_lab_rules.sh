@@ -10,7 +10,9 @@
 #   ./scripts/install_lab_rules.sh /path/to/new-project --mode symlink --with-scripts --force
 #
 # What gets installed (by default):
-#   .cursorrules
+#   .cursorrules                                      (legacy IDE)
+#   AGENTS.md                                         (Cursor CLI + IDE)
+#   .cursor/rules/security-research-lab.mdc           (Cursor CLI + IDE)
 #   ai_agent_instructions/   (docs 00–20 + templates + INDEX.md)
 #
 # Optional:
@@ -242,6 +244,29 @@ log "Target:      $TARGET"
 log "Mode:        $MODE"
 
 install_path "$LAB_ROOT/.cursorrules" "$TARGET/.cursorrules"
+
+# Cursor CLI + modern IDE: AGENTS.md and .cursor/rules/*.mdc
+# (official CLI docs load these; .cursorrules alone is legacy)
+if [[ -f "$LAB_ROOT/AGENTS.md" ]]; then
+  install_path "$LAB_ROOT/AGENTS.md" "$TARGET/AGENTS.md"
+else
+  warn "AGENTS.md missing in lab root — CLI may not pick up rules automatically"
+fi
+
+MDC_SRC="$LAB_ROOT/.cursor/rules/security-research-lab.mdc"
+MDC_DEST_DIR="$TARGET/.cursor/rules"
+MDC_DEST="$MDC_DEST_DIR/security-research-lab.mdc"
+if [[ -f "$MDC_SRC" ]]; then
+  if [[ "$DRY_RUN" -eq 1 ]]; then
+    log "[dry-run] mkdir -p $MDC_DEST_DIR"
+  else
+    mkdir -p "$MDC_DEST_DIR"
+  fi
+  install_path "$MDC_SRC" "$MDC_DEST"
+else
+  warn "Missing $MDC_SRC — skipping project rule .mdc"
+fi
+
 install_path "$LAB_ROOT/ai_agent_instructions" "$TARGET/ai_agent_instructions"
 
 if [[ "$WITH_SCRIPTS" -eq 1 ]]; then
@@ -289,12 +314,15 @@ cat <<EOF
 [+] Done.
 
 Next steps:
-  1. Open the project in Cursor:  cursor $(printf '%q' "$TARGET")
-  2. Start Agent chat and paste contents of FIRST_PROMPT.txt
+  1. IDE:  cursor $(printf '%q' "$TARGET")
+     CLI:  cd $(printf '%q' "$TARGET") && agent
+  2. Paste FIRST_PROMPT.txt into the first chat (IDE or CLI)
      (or run:  cat $(printf '%q' "$TARGET/FIRST_PROMPT.txt"))
 
 Installed:
   - .cursorrules
+  - AGENTS.md
+  - .cursor/rules/security-research-lab.mdc
   - ai_agent_instructions/
 EOF
 
