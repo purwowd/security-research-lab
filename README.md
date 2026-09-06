@@ -19,19 +19,28 @@ That's it. The `.cursorrules` file is automatically loaded by Cursor, which tell
 
 ### Use these rules in a new project
 
-**Option A — download script only** (auto-clones the lab into `~/.cache/security-research-lab`, then applies rules):
+**Option A — from a local lab checkout** (works for private repos):
+
+```bash
+./scripts/install_lab_rules.sh /path/to/new-project
+./scripts/install_lab_rules.sh /path/to/new-project --mode symlink
+./scripts/install_lab_rules.sh /path/to/new-project --with-scripts --force
+```
+
+**Option B — download script only** (repo must be **public**, or use a GitHub token; auto-clones into `~/.cache/security-research-lab`):
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/purwowd/security-research-lab/main/scripts/install_lab_rules.sh \
   | bash -s -- /path/to/new-project
 ```
 
-**Option B — from a local lab checkout:**
+Private repo alternative:
 
 ```bash
-./scripts/install_lab_rules.sh /path/to/new-project
-./scripts/install_lab_rules.sh /path/to/new-project --mode symlink
-./scripts/install_lab_rules.sh /path/to/new-project --with-scripts --force
+# authenticated raw download
+curl -fsSL -H "Authorization: Bearer $GITHUB_TOKEN" \
+  https://raw.githubusercontent.com/purwowd/security-research-lab/main/scripts/install_lab_rules.sh \
+  | bash -s -- /path/to/new-project --repo-url git@github.com:purwowd/security-research-lab.git
 ```
 
 Then open the target project in Cursor and paste `FIRST_PROMPT.txt` into Agent chat.
