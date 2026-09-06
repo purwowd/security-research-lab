@@ -1,0 +1,6 @@
+services:
+  vulnerable-app:
+    build: .
+    ports:
+      - "5055:5055"
+    # Lab only — intentionally vulnerable SSRF allowlist bypass

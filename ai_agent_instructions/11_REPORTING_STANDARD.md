@@ -152,16 +152,18 @@ Use CVSS when applicable. Otherwise use:
 ### Finding + PoC + Detection pack
 
 ```
-Buat report profesional untuk finding ini (format F-XXX), plus PoC lab-contained dan detection pack.
-Semua harus reproducible dan ada evidence index (pcap/log/diff).
-Simpan di reports/<date>-<name>/.
+Context: Security Research Lab (docs 00–20).
+Produce a professional finding report (format F-XXX), plus a lab-contained PoC and detection pack.
+Everything must be reproducible with an evidence index (pcap/log/diff).
+Save under reports/<date>-<name>/.
 ```
 
 ### Detection pack only
 
 ```
-Buat detection pack (Sigma/Suricata/Zeek) untuk teknik ini, sertakan validation plan + triage notes.
-Simpan di reports/<date>-<name>/detection/ dan evidence di reports/<date>-<name>/evidence/.
+Context: Security Research Lab.
+Build a detection pack (Sigma/Suricata/Zeek) for this technique, including validation plan + triage notes.
+Save under reports/<date>-<name>/detection/ and evidence under reports/<date>-<name>/evidence/.
 ```
 
 ---

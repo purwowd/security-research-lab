@@ -1,0 +1,10 @@
+services:
+  localstack:
+    image: localstack/localstack:3.7
+    ports:
+      - "4566:4566"
+    environment:
+      - SERVICES=s3,iam,sts
+      - DEBUG=0
+    volumes:
+      - "./localstack-init:/etc/localstack/init/ready.d"

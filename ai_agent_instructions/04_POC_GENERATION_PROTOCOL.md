@@ -1,9 +1,10 @@
 # 04 - Proof of Concept (PoC) Generation Protocol
 
 > **Classification**: INTERNAL - Security Research Lab  
-> **Version**: 1.0  
-> **Last Updated**: 2026-02-08  
-> **Depends On**: `03_OFFENSIVE_TOOL_POLICY.md`
+> **Version**: 2.0  
+> **Last Updated**: 2026-09-06  
+> **Depends On**: `03_OFFENSIVE_TOOL_POLICY.md`  
+> **Companion**: `13_LAB_POC_STANDARD.md` (package/CLI contract used in this lab)
 
 ---
 
@@ -69,24 +70,25 @@ Requirements:
 
 ## PoC Structure Template
 
-Every PoC should follow this structure:
+Every PoC in this lab should follow the golden layout (see also `13_LAB_POC_STANDARD.md`):
 
 ```
-poc_[CVE-or-name]/
-├── README.md              # Vulnerability description, impact, reproduction steps
-├── poc.py                 # Main PoC script
-├── requirements.txt       # Python dependencies
-├── setup.sh              # Environment setup (if needed)
-├── evidence/             # Screenshots, logs, pcaps
-│   ├── exploitation.png
-│   └── impact_demo.log
-├── detection/            # Detection rules
-│   ├── rule.yara
-│   └── rule.sigma
-└── remediation/          # Fix guidance
-    └── patch_notes.md
+pocs/<CVE-or-name>/
+├── README.md              # Vulnerability description, impact, reproduction
+├── poc.py                 # Main PoC (--mode check|exploit|full)
+├── requirements.txt
+├── payloads/              # Optional gadget/source templates
+├── evidence/              # Runtime evidence (pcap, logs, diffs)
+└── vulnerable-app/        # Strongly preferred local harness
+    ├── Dockerfile
+    ├── docker-compose.yml
+    ├── README.md
+    └── <app sources>
 ```
 
+Scaffold with `python scripts/new_poc.py CVE-YYYY-XXXXX --name "..."`.
+
+Optional Tier 3 extras: `detection/`, `remediation/`, generated `--report` Markdown.
 ---
 
 ## PoC Code Protocol
@@ -311,7 +313,8 @@ PoCs must be:
 2. **Targeted** — Only affects the intended target, no collateral damage
 3. **Documented** — Clear explanation of every step
 4. **Configurable** — Target, ports, paths, payloads are parameterized
-5. **Safe-by-default** — Uses `--check` mode (non-exploiting) as default when possible
+5. **Safe-by-default** — `--mode check` (non-exploiting) is the CLI default; see `13_LAB_POC_STANDARD.md`
+6. **Harness when feasible** — local Docker target so validation does not depend on external systems
 
 ---
 

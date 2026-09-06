@@ -1,2 +1,43 @@
-# Personal interview materials — keep local, do not commit
+# Personal / local materials
 reports/2026-07-27-magang-cyber-interview/
+
+# OS / editor noise
+.DS_Store
+**/.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*~
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.Python
+.venv/
+venv/
+.env
+.python-version
+pocs/**/.venv/
+
+# PoC runtime artifacts (keep scaffolds, ignore dumps)
+pocs/**/evidence/**
+!pocs/**/evidence/.gitkeep
+pocs/**/result.json
+pocs/**/out.json
+pocs/**/*.pcap
+pocs/**/*.pcapng
+
+# Node / Java build (harnesses)
+**/node_modules/
+**/.next/
+**/target/
+*.class
+!**/payloads/**
+
+# Secrets
+*.pem
+*.key
+credentials.json
+.env.*

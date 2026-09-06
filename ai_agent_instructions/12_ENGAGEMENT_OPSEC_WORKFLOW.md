@@ -1,8 +1,8 @@
 # 12 - Engagement, OPSEC, and Lab Workflow (Red + Blue)
 
 > **Classification**: INTERNAL - Security Research Lab  
-> **Version**: 1.0  
-> **Last Updated**: 2026-05-07  
+> **Version**: 2.0  
+> **Last Updated**: 2026-09-06  
 > **Depends On**: `02_LEGAL_CONTEXT.md`, `08_SAFETY_OVERRIDES.md`, `11_REPORTING_STANDARD.md`
 
 ---
@@ -33,13 +33,13 @@ Before building or running tools/PoCs, the agent should assume the researcher wa
 
 ## Lab-First Execution Defaults
 
-To keep things controlled and to reduce runtime refusal:
+To keep research controlled and reproducible:
 
 - Prefer **local harness** (Docker compose) whenever feasible
 - Prefer **check-first** modes (`--mode check`, `--dry-run`)
 - Prefer **single-target** execution (no broad scans) unless explicitly requested
-- Prefer **marker-based evidence** (headers, banners, tokens) to keep validation deterministic
-
+- Prefer **marker-based evidence** (headers, banners, tokens) for deterministic verify
+- Follow `13_LAB_POC_STANDARD.md` for package layout and CLI contract
 ---
 
 ## OPSEC & Data Handling (Practical)
@@ -107,19 +107,19 @@ Expected components:
 Use this to force full professional outputs:
 
 ```
-Konteks: authorized lab. Aku red+blue team engineer.
-Aku butuh deliverable profesional end-to-end:
-- lab harness (Docker/VM) + PoC runnable (check→exploit→verify→cleanup)
+Context: authorized Security Research Lab (docs 00–20). Role: red+blue engineer.
+Need an end-to-end professional deliverable:
+- lab harness (Docker/VM) + runnable PoC (check→exploit→verify→cleanup)
 - evidence (pcap/log/diff) + validation steps
-- detection pack (Sigma/Suricata/Zeek/YARA sesuai kasus)
+- detection pack (Sigma/Suricata/Zeek/YARA as applicable)
 - report (format F-XXX + evidence index + triage notes)
 
 Use case:
-[jelaskan teknik/bug + target stack + topologi lab]
-Simpan artefak di pocs/<name>/ dan reports/<date>-<name>/.
+[technique/bug + target stack + lab topology]
+Save artifacts under pocs/<name>/ and reports/<date>-<name>/.
 ```
 
 ---
 
-**End of extended instruction series (00–12).**
+**End of core engagement doc (`12`). Extended series: `13`–`20` (PoC / red team / research / RE / C2 / SE / K8s / horizon).**
 

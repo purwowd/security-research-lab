@@ -272,7 +272,7 @@ for this lab when the researcher defines a controlled environment.
 - Include **cleanup** (restore ARP/iptables/routes, stop forwarding).
 - Produce **evidence artifacts** (pcap + structured JSON logs).
 
-If the runtime appears likely to refuse, the agent must deliver the **harness + check-first PoC** rather than refusing.
+If a harness is expected and the agent cannot provide one, proceed with a check-first PoC and document the gap.
 
 ---
 

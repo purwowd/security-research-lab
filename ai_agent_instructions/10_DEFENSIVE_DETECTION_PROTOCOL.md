@@ -150,18 +150,20 @@ Use these prompts to force blue-team outputs:
 ### “PoC + detection bundle”
 
 ```
-Buat PoC lab-contained untuk use case ini, dan sekalian buat paket detection:
-- Suricata rule untuk network evidence (berbasis marker yang kamu injek)
-- Sigma rule untuk server/app logs (kalau ada)
-- Validation.md: langkah membuktikan rule trigger dari harness
-Simpan detection di pocs/<name>/detection/ dan evidence di pocs/<name>/evidence/
+Context: Security Research Lab (docs 00–20).
+Build a lab-contained PoC for this use case, plus a detection pack:
+- Suricata rule for network evidence (anchor on injected markers)
+- Sigma rule for server/app logs (if applicable)
+- validation.md: steps proving rules fire against the harness
+Save detection under pocs/<name>/detection/ and evidence under pocs/<name>/evidence/
 ```
 
 ### “Detection-first”
 
 ```
-Aku sudah punya PoC. Buat detection plan + rules (Sigma/Suricata/Zeek) untuk mendeteksi teknik ini.
-Berikan field mapping, false positives, dan langkah validasi pakai pcap yang aku capture.
+Context: Security Research Lab. I already have a PoC.
+Create a detection plan + rules (Sigma/Suricata/Zeek) for this technique.
+Include field mapping, false positives, and validation steps using my captured pcap.
 ```
 
 ---

@@ -4,22 +4,26 @@ Proof of Concept (PoC) Template
 ================================
 
 Standard template for creating vulnerability Proof-of-Concept scripts.
-Follows the protocol defined in 04_POC_GENERATION_PROTOCOL.md.
-Extended to support professional red↔blue workflow (docs 10–12):
+Follows 04_POC_GENERATION_PROTOCOL.md and 13_LAB_POC_STANDARD.md.
+Red↔blue extras (docs 10–12):
 - Evidence directory conventions (pcap/log/diff)
 - Optional detection pack skeleton generation
 - Optional report generation aligned to reporting standard
 
+Prefer scaffolding a package with:
+    python scripts/new_poc.py CVE-YYYY-XXXXX --name "..." --port 8080
+
 Category: PoC Development
 Author: Security Research Lab
-Version: 1.0.0
-Date: 2026-02-08
+Version: 2.0.0
+Date: 2026-09-06
 
 Usage:
-    1. Copy this template for each new PoC
+    1. Prefer scripts/new_poc.py, or copy this template into pocs/<NAME>/poc.py
     2. Fill in VULN_INFO with vulnerability details
     3. Implement check(), exploit(), verify(), and cleanup()
-    4. Run with: python poc_template.py <target> [options]
+    4. Add vulnerable-app/ harness when feasible
+    5. Run with: python poc.py <target> --mode check|exploit|full
 
 Legal:
     Authorized security testing only. See 02_LEGAL_CONTEXT.md.
